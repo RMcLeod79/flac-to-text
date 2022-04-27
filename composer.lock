@@ -4,8 +4,36 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f418636da0644defad0d548af736ec4",
+    "content-hash": "740671f0f8d1b4fc9d3ae81b5c0eb301",
     "packages": [
+        {
+            "name": "bluemoehre/flac-php",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bluemoehre/flac-php.git",
+                "reference": "0194a5090124983d5dd8e72440d04955da0abc42"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bluemoehre/flac-php/zipball/0194a5090124983d5dd8e72440d04955da0abc42",
+                "reference": "0194a5090124983d5dd8e72440d04955da0abc42",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "flac.class.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "PHP class for native reading FLAC's metadata",
+            "support": {
+                "issues": "https://github.com/bluemoehre/flac-php/issues",
+                "source": "https://github.com/bluemoehre/flac-php/tree/master"
+            },
+            "time": "2017-02-12T23:16:24+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.9.3",

@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\TranscriptionException;
+use Flac;
+use Google\ApiCore\ValidationException;
 use Google\Cloud\Speech\V1\RecognitionAudio;
 use Google\Cloud\Speech\V1\RecognitionConfig;
 use Google\Cloud\Speech\V1\SpeechClient;
@@ -12,12 +15,17 @@ class GoogleClient
     private SpeechClient $client;
     private RecognitionConfig $config;
     private RecognitionAudio $audio;
+    private Flac $flac;
 
     public function __construct()
     {
-        $this->client = new SpeechClient([
-            'credentials' => Storage::path('google-key.json')
-        ]);
+        try {
+            $this->client = new SpeechClient([
+                'credentials' => Storage::path('google-key.json')
+            ]);
+        } catch (ValidationException) {
+            throw new TranscriptionException('Unable to authenticate with Google');
+        }
 
         $this->audio = new RecognitionAudio();
     }
@@ -26,8 +34,13 @@ class GoogleClient
     {
         $this->setupAudioClient($file);
 
-        $operation = $this->client->longRunningRecognize($this->config, $this->audio);
-        $operation->pollUntilComplete();
+        try {
+            $operation = $this->client->longRunningRecognize($this->config, $this->audio);
+            $operation->pollUntilComplete();
+        } catch (\Exception $e) {
+            $this->client->close();
+            throw new TranscriptionException($e->getMessage());
+        }
 
         if ($operation->operationSucceeded()) {
             $response = $operation->getResult();
@@ -38,7 +51,8 @@ class GoogleClient
                 $transcript = $mostLikely->getTranscript();
             }
         } else {
-            $transcript = 'failed to transcribe';
+            $this->client->close();
+            throw new TranscriptionException('Google failed to transcribe the file');
         }
 
         $this->client->close();
@@ -48,10 +62,16 @@ class GoogleClient
 
     private function setupAudioClient(string $file): void
     {
+        try {
+            $flac = new Flac($file);
+        } catch (\ErrorException) {
+            throw new TranscriptionException('Unable to read the file');
+        }
+
         $this->config = new RecognitionConfig();
         $this->config->setEncoding(RecognitionConfig\AudioEncoding::FLAC);
-        $this->config->setSampleRateHertz(44100);
-        $this->config->setAudioChannelCount(2);
+        $this->config->setSampleRateHertz($flac->streamSampleRate);
+        $this->config->setAudioChannelCount($flac->streamChannels);
         $this->config->setLanguageCode('en_US');
 
         $this->audio->setContent(file_get_contents($file));
