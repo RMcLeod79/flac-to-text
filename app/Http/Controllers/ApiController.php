@@ -39,4 +39,14 @@ class ApiController extends Controller
 
         return response($transcription->id, 203);
     }
+
+    public function transcription(Request $request): Response
+    {
+        $transcription = Transcription::find($request['id']);
+        if (is_null($transcription)) {
+            return response(status: 404);
+        }
+
+        return response(json_encode($transcription));
+    }
 }
