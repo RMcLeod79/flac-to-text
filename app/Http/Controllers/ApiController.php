@@ -24,7 +24,9 @@ class ApiController extends Controller
         try {
             $this->validator->validateUpload($request->json('content'));
         } catch (ValidationException $e) {
-            return response($e->getMessage(), 400);
+            return response(json_encode([
+                'error_message' => $e->getMessage()
+            ]), 400);
         }
 
         $filename = $request->json('filename') . $time . '.flac';
@@ -37,7 +39,9 @@ class ApiController extends Controller
 
         Transcribe::dispatch($transcription);
 
-        return response($transcription->id, 203);
+        return response(json_encode([
+            'id' => $transcription->id
+        ]), 203);
     }
 
     public function transcription(Request $request): Response
