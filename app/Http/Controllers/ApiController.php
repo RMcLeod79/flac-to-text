@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\TranscriptionException;
 use App\Exceptions\ValidationException;
 use App\Http\Validators\UploadValidator;
+use App\Jobs\Transcribe;
 use App\Models\Transcription;
 use App\Services\GoogleClient;
 use Illuminate\Http\Request;
@@ -34,17 +35,7 @@ class ApiController extends Controller
             'status' => 'Started',
         ]);
 
-        try {
-            $client = new GoogleClient();
-            $transcription->transcription = $client->transcribe(Storage::path('test.flac'));
-            $transcription->status = 'Complete';
-            $transcription->save();
-        } catch (TranscriptionException $e) {
-            $transcription->status = 'Failed';
-            $transcription->error = $e->getMessage();
-            $transcription->save();
-            return response($e->getMessage(), 502);
-        }
+        Transcribe::dispatch($transcription);
 
         return response($transcription->id, 203);
     }
