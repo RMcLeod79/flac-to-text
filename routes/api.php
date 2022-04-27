@@ -16,3 +16,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/file/upload', [ApiController::class, 'upload']);
+Route::get('/transcription/{id}', [ApiController::class, 'transcription']);
